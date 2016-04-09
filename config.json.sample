@@ -1,0 +1,10 @@
+{
+  "slack": {
+    "token": "SLACK TOKEN",
+    "channel": "#github_events"
+  },
+  "github": {
+    "user": "USER NAME",
+    "token": "GITHUB PERSONAL ACCESS TOKEN"
+  }
+}
