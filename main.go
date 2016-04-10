@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/philopon/github-events-to-slack/github"
 	"github.com/philopon/github-events-to-slack/slack"
@@ -32,7 +33,7 @@ func Watch(config Config, state string) error {
 	}
 
 	interupt := make(chan os.Signal, 1)
-	signal.Notify(interupt, os.Interrupt)
+	signal.Notify(interupt, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
 	go func() {
 		<-interupt
 		gh.SaveState(state)
