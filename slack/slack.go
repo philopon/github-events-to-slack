@@ -56,6 +56,10 @@ func ParseEvent(e github.Event) (Message, error) {
 		var payload CreateEvent
 		err = json.Unmarshal(e.Payload, &payload)
 		msg = &payload
+	case "DeleteEvent":
+		var payload DeleteEvent
+		err = json.Unmarshal(e.Payload, &payload)
+		msg = &payload
 	default:
 		err = fmt.Errorf("unknown event: %v", e.Type)
 	}
@@ -260,6 +264,14 @@ type CreateEvent struct {
 
 func (e CreateEvent) Text(p Parsed) string {
 	return fmt.Sprintf("%v created %v `%v` at %v", p.UserLink(), e.RefType, p.TreeLink(e.Ref), p.RepoLink())
+}
+
+type DeleteEvent struct {
+	CreateEvent
+}
+
+func (e DeleteEvent) Text(p Parsed) string {
+	return fmt.Sprintf("%v deleted %v `%v` at %v", p.UserLink(), e.RefType, p.TreeLink(e.Ref), p.RepoLink())
 }
 
 type client struct {
