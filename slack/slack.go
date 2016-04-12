@@ -52,6 +52,10 @@ func ParseEvent(e github.Event) (Message, error) {
 		var payload CommitCommentEvent
 		err = json.Unmarshal(e.Payload, &payload)
 		msg = &payload
+	case "CreateEvent":
+		var payload CreateEvent
+		err = json.Unmarshal(e.Payload, &payload)
+		msg = &payload
 	default:
 		err = fmt.Errorf("unknown event: %v", e.Type)
 	}
@@ -246,6 +250,16 @@ func (e CommitCommentEvent) Text(p Parsed) string {
 	title := fmt.Sprintf("%v@%v", p.RepoName(), e.Comment.CommitId[:10])
 	link := SlackLink(e.Comment.HtmlUrl, title)
 	return fmt.Sprintf("*%v commented on commit %v*\n%v", p.UserLink(), link, e.Comment.Body)
+}
+
+type CreateEvent struct {
+	Event
+	Ref     string
+	RefType string `json:"ref_type"`
+}
+
+func (e CreateEvent) Text(p Parsed) string {
+	return fmt.Sprintf("%v created %v `%v` at %v", p.UserLink(), e.RefType, p.TreeLink(e.Ref), p.RepoLink())
 }
 
 type client struct {
