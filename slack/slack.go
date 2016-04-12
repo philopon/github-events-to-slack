@@ -60,6 +60,10 @@ func ParseEvent(e github.Event) (Message, error) {
 		var payload DeleteEvent
 		err = json.Unmarshal(e.Payload, &payload)
 		msg = &payload
+	case "ForkEvent":
+		var payload ForkEvent
+		err = json.Unmarshal(e.Payload, &payload)
+		msg = &payload
 	default:
 		err = fmt.Errorf("unknown event: %v", e.Type)
 	}
@@ -272,6 +276,18 @@ type DeleteEvent struct {
 
 func (e DeleteEvent) Text(p Parsed) string {
 	return fmt.Sprintf("%v deleted %v `%v` at %v", p.UserLink(), e.RefType, p.TreeLink(e.Ref), p.RepoLink())
+}
+
+type ForkEvent struct {
+	Event
+	Forkee struct {
+		FullName string `json:"full_name"`
+		HtmlUrl  string `json:"html_url"`
+	}
+}
+
+func (e ForkEvent) Text(p Parsed) string {
+	return fmt.Sprintf("%v forked %v to %v", p.UserLink(), p.RepoLink(), SlackLink(e.Forkee.HtmlUrl, e.Forkee.FullName))
 }
 
 type client struct {
