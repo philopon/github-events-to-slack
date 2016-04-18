@@ -64,6 +64,10 @@ func ParseEvent(e github.Event) (Message, error) {
 		var payload ForkEvent
 		err = json.Unmarshal(e.Payload, &payload)
 		msg = &payload
+	case "ReleaseEvent":
+		var payload ReleaseEvent
+		err = json.Unmarshal(e.Payload, &payload)
+		msg = &payload
 	default:
 		err = fmt.Errorf("unknown event: %v", e.Type)
 	}
@@ -287,7 +291,21 @@ type ForkEvent struct {
 }
 
 func (e ForkEvent) Text(p Parsed) string {
-	return fmt.Sprintf("%v forked %v to %v", p.UserLink(), p.RepoLink(), SlackLink(e.Forkee.HtmlUrl, e.Forkee.FullName))
+	link := SlackLink(e.Forkee.HtmlUrl, e.Forkee.FullName)
+	return fmt.Sprintf("%v forked %v to %v", p.UserLink(), p.RepoLink(), link)
+}
+
+type ReleaseEvent struct {
+	Event
+	Release struct {
+		Name    string
+		HtmlUrl string `json:"html_url"`
+	}
+}
+
+func (e ReleaseEvent) Text(p Parsed) string {
+	link := SlackLink(e.Release.HtmlUrl, e.Release.Name)
+	return fmt.Sprintf("%v released %v at %v", p.UserLink(), link, p.RepoLink())
 }
 
 type client struct {
